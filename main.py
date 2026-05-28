@@ -1,16 +1,21 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
 from src.chat import send_message
+import uvicorn
 
-print("FastAPI Docs Assistant")
-print("Digite 'sair' para encerrar\n")
+app = FastAPI()
 
-while True:
-    message = input("Você: ")
+class Message(BaseModel):
+    message: str
 
-    if message.lower() == "sair":
-        break
+class Response(BaseModel):
+    response: str
 
-    if not message.strip():
-        continue
+@app.post('/send-message', response_model=Response)
+async def send_request(message:Message):
+    response = send_message(message.message)
+    return {"response": response}
 
-    response = send_message(message)
-    print(f"\nAssistente: {response}\n")
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
